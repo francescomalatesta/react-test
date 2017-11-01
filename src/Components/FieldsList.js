@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-import BuildComponentByItemData from './BuildComponentByItemData.js';
+import GetComponentNameByItemData from './GetComponentNameByItemData.js';
 import AddNewFieldButton from './AddNewFieldButton.js';
 
 import readFromLocalStorage from '../Utils/ReadFromLocalStorage.js';
@@ -11,21 +11,20 @@ class FieldsList extends Component {
     super(props);
 
     this.state = {
-      items: [{
-        type: 'first_name',
-        name: 'First Name'
-      }, {
-        type: 'last_name',
-        name: 'Last Name'
-      }]
+      items: []
     }
 
     this.handleShowConsoleOutput = this.handleShowConsoleOutput.bind(this);
     this.handleLocalStorageSave = this.handleLocalStorageSave.bind(this);
     this.handleLocalStorageLoad = this.handleLocalStorageLoad.bind(this);
+
+    this.handlePropertyChange = this.handlePropertyChange.bind(this);
+    this.handleItemDeletion = this.handleItemDeletion.bind(this);
+
+    this.handleItemAdd = this.handleItemAdd.bind(this);
   }
 
-  changeProperty(indexToBeUpdated, name, newValue) {
+  handlePropertyChange(indexToBeUpdated, name, newValue) {
     let newItems = this.state.items.map((item, index) => {
       if(index === indexToBeUpdated) {
         if(name === 'type') {
@@ -44,7 +43,7 @@ class FieldsList extends Component {
     this.setState(() => ({items: newItems}));
   }
 
-  deleteItem(indexToBeRemoved) {
+  handleItemDeletion(indexToBeRemoved) {
     let newItems = this.state.items.filter((item, index) => {
       return index !== indexToBeRemoved;
     });
@@ -52,7 +51,7 @@ class FieldsList extends Component {
     this.setState(() => ({items: newItems}));
   }
 
-  addItem() {
+  handleItemAdd() {
     let items = this.state.items;
     items.push({
       type: 'first_name',
@@ -76,30 +75,46 @@ class FieldsList extends Component {
     this.setState(() => ({items}));
   }
 
-  getElementByType(item, index) {
-    return BuildComponentByItemData(item, index, this);
-  }
-
   componentDidMount() {
     this.handleLocalStorageLoad();
   }
 
   render() {
+    let itemsToRender;
+
     if(this.state.items.length === 0) {
-      return <i>No items so far... click on "Add New Field" button.</i>
+      itemsToRender = (
+        <p><i>No items so far... click on "Add New Field" button.</i></p>
+      );
+    } else {
+      itemsToRender = (
+        <ul>
+          {this.state.items.map((item, index) => {
+            let FieldComponent = GetComponentNameByItemData(item);
+
+            return (
+              <FieldComponent
+                fieldIndex={index}
+                key={index}
+
+                onDelete={this.handleItemDeletion}
+                onPropertyChanged={this.handlePropertyChange}
+
+                {...item}
+                />
+            );
+          }, this)}
+        </ul>
+      );
     }
 
     return (
       <div>
-        <ul>
-          {this.state.items.map((item, index) => {
-            return this.getElementByType(item, index);
-          })}
-        </ul>
+        {itemsToRender}
 
         <hr />
 
-        <AddNewFieldButton onAdd={this.addItem.bind(this)} />
+        <AddNewFieldButton onAdd={this.handleItemAdd} />
         <button type="button" onClick={this.handleShowConsoleOutput}>Show Console Output</button>
 
         <hr />

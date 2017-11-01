@@ -7,6 +7,10 @@ class IpAddress extends Component {
     super(props);
 
     this.handleVersionChange = this.handleVersionChange.bind(this);
+
+    if(this.props.version === IpAddress.defaultProps.version) {
+      this.props.onPropertyChanged(this.props.fieldIndex, 'version', IpAddress.defaultProps.version);
+    }
   }
 
   handleVersionChange(event) {
@@ -32,5 +36,9 @@ class IpAddress extends Component {
     );
   }
 }
+
+IpAddress.defaultProps = {
+  version: 'ip_v4'
+};
 
 export default IpAddress;
